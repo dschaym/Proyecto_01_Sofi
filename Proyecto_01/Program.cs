@@ -302,7 +302,7 @@ void MostrarReglas()
     Console.WriteLine("  - Enviar a revisión: cumple todas las reglas, pero tiene impacto Alto");
     Console.WriteLine("  - Rechazar: si falla una regla técnica");
     Console.WriteLine();
-    for (int i = 0;i < 100; i ++) Console.Write("=");
+    for (int i = 0; i < 100; i++) Console.Write("=");
 }
 void MostrarEstadisticas()
 {
