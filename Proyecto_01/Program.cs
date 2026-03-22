@@ -1,4 +1,6 @@
-﻿int totalEvaluados = 0;
+﻿using System.Runtime.Serialization.Formatters;
+
+int totalEvaluados = 0;
 int publicados = 0;
 int rechazados = 0;
 int enRevision = 0;
@@ -195,7 +197,6 @@ string ClasificarImpacto(int duracion, int hora, int produccion)
     // Si no fue Alto ni Medio y la producción es baja con <60, queda Bajo
     return "Bajo";
 }
-
 // "Publicar con ajustes"
 // Cumple técnicamente, pero está al borde de límites
 bool RequiereAjusteMenor(int tipo, int duracion, int clasif, int hora)
@@ -272,23 +273,76 @@ int LeerNivelProduccion()
         Console.Write("Inválido. Escriba 1-3: ");
     return valor;
 }
-void MostrarReglas() //Ya falta poco para terminar!!! El código, falta lo demás del proyecto :'(
+void MostrarReglas()
 {
+    Console.Clear();
+    for (int i = 0; i < 19; i++) Console.Write("=");
     Console.WriteLine("\nREGLAS DEL SISTEMA");
+    for (int i = 0; i < 19; i++) Console.Write("=");
+    Console.WriteLine();
+
+    Console.WriteLine("\nClasificación y horario:");
+    Console.WriteLine("  - Todo público: cualquier hora");
+    Console.WriteLine("  - +13: entre 6 y 22 horas");
+    Console.WriteLine("  - +18: entre 22 y 5 horas (22–23 o 0–5)");
+
+    Console.WriteLine("\nDuración por tipo:");
+    Console.WriteLine("  - Película: 60–180 min");
+    Console.WriteLine("  - Serie: 20–90 min");
+    Console.WriteLine("  - Documental: 30–120 min");
+    Console.WriteLine("  - Evento en vivo: 30–240 min");
+
+    Console.WriteLine("\nProducción:");
+    Console.WriteLine("  - Baja: solo válida para Todo público o +13 (no permitida para +18)");
+    Console.WriteLine("  - Media/Alta: válida para cualquier clasificación");
+
+    Console.WriteLine("\nDecisiones del sistema:");
+    Console.WriteLine("  - Publicar: cumple todas las reglas técnicas y su impacto es Bajo o Medio");
+    Console.WriteLine("  - Publicar con ajustes: cumple todas las relaglas, pero requiere modificación menor");
+    Console.WriteLine("  - Enviar a revisión: cumple todas las reglas, pero tiene impacto Alto");
+    Console.WriteLine("  - Rechazar: si falla una regla técnica");
+    Console.WriteLine();
+    for (int i = 0;i < 100; i ++) Console.Write("=");
 }
 void MostrarEstadisticas()
 {
+    Console.Clear();
+    for (int i = 0; i < 25; i++) Console.Write("=");
     Console.WriteLine("\nESTADÍSTICAS DE LA SESIÓN");
-    Console.WriteLine($"Total: {totalEvaluados}, Publicados: {publicados}, Rechazados: {rechazados}, En revisión: {enRevision}");
-}
+    for (int i = 0; i < 25; i++) Console.Write("=");
+    Console.WriteLine();
+    Console.WriteLine($"Total: {totalEvaluados}");
+    Console.WriteLine($"Publicados: {publicados}");
+    Console.WriteLine($"Rechazados: {rechazados}");
+    Console.WriteLine($"En Revisión: {enRevision}");
+    string impactoPredominante = "Ninguno";
 
+    if (impactoAlto >= impactoMedio && impactoAlto >= impactoBajo && impactoAlto > 0)
+        impactoPredominante = "Alto";
+    else if (impactoMedio >= impactoAlto && impactoMedio >= impactoBajo && impactoMedio > 0)
+        impactoPredominante = "Medio";
+    else if (impactoBajo >= impactoAlto && impactoBajo >= impactoMedio && impactoBajo > 0)
+        impactoPredominante = "Bajo";
+
+    Console.WriteLine($"Impacto predominante: {impactoPredominante}");
+    double porcentajeAprobacion = 0.0;
+    if (totalEvaluados > 0)
+        porcentajeAprobacion = (publicados * 100.0) / totalEvaluados;
+
+    Console.WriteLine($"Porcentaje de aprobación: {porcentajeAprobacion:0.0}%");
+    for (int i = 0; i < 30; i++) Console.Write("=");
+}
 void ReiniciarEstadisticas()
 {
-    totalEvaluados = publicados = rechazados = enRevision = 0;
-    impactoBajo = impactoMedio = impactoAlto = 0;
+    totalEvaluados = 0;
+    publicados = 0;
+    rechazados = 0;
+    enRevision = 0;
+    impactoBajo = 0;
+    impactoMedio = 0;
+    impactoAlto = 0;
     Console.WriteLine("\nESTRATEGÍAS REINICIADAS...");
 }
-
 void Pausa()
 {
     Console.WriteLine("\nPresione una tecla para continuar...");
