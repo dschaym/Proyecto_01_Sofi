@@ -65,15 +65,156 @@ int MostrarMenu()
 void EvaluarContenido()
 {
     Console.WriteLine("\nEVALUACIÓN DE CONTENIDO");
-
-    int tipo = LeerTipoContenido();          // 1-4
-    int duracion = LeerDuracion();           // >0
-    int clasif = LeerClasificacion();        // 1-3
+    int tipo = LeerTipoContenido();          // 1 Película, 2 Serie, 3 Documental, 4 En vivo
+    int duracion = LeerDuracion();           // > 0
+    int clasif = LeerClasificacion();        // 1 Todo público, 2 +13, 3 +18
     int hora = LeerHoraProgramada();         // 0-23
-    int produccion = LeerNivelProduccion();  // 1-3
+    int produccion = LeerNivelProduccion();  // 1 Bajo, 2 Medio, 3 Alto
 
-    Console.WriteLine($"\nLeído -> Tipo:{tipo}, Duración:{duracion}, Clasif:{clasif}, Hora:{hora}, Prod:{produccion}");
-    Console.WriteLine("(En la siguiente parte aplico reglas técnicas, impacto y decisión)");
+    // a) Validación técnica (reglas obligatorias)
+    string razonTecnica;
+    bool okTecnico = ValidacionTecnica(tipo, duracion, clasif, hora, produccion, out razonTecnica);
+
+    string decision;
+    string detalleDecision;
+
+    if (!okTecnico)
+    {
+        decision = "Rechazar";
+        detalleDecision = "Incumple regla obligatoria: " + razonTecnica;
+        rechazados++;
+    }
+    else
+    {
+        // b) Clasificación de impacto (Bajo/Medio/Alto)
+        string impacto = ClasificarImpacto(duracion, hora, produccion);
+
+        // Contabilizamos impacto para "predominante"
+        if (impacto == "Bajo") impactoBajo++;
+        else if (impacto == "Medio") impactoMedio++;
+        else impactoAlto++;
+
+        // c) Decisión final
+        if (impacto == "Alto")
+        {
+            decision = "Enviar a revisión";
+            detalleDecision = "Impacto Alto (producción alta, o duración >120, o franja 20–23).";
+            enRevision++;
+        }
+        else
+        {
+            bool requiereAjuste = RequiereAjusteMenor(tipo, duracion, clasif, hora); // no viola reglas técnicas
+            if (requiereAjuste)
+            {
+                decision = "Publicar con ajustes";
+                detalleDecision = "Cumple reglas; sugerimos ajuste menor (p. ej., mover horario o afinar minutos cerca del límite).";
+                publicados++;
+            }
+            else
+            {
+                decision = "Publicar";
+                detalleDecision = "Cumple reglas técnicas e impacto " + impacto + ".";
+                publicados++;
+            }
+        }
+    }
+
+    totalEvaluados++;
+
+    // Mostrar resultado
+    Console.WriteLine($"DECISIÓN: {decision}");
+    Console.WriteLine($"DETALLE : {detalleDecision}");
+}
+// ---- Reglas técnicas (usa AND/OR/NOT e if anidado/encadenado) ----
+bool ValidacionTecnica(int tipo, int duracion, int clasif, int hora, int produccion, out string razon)
+{
+    // 1) Clasificación vs horario
+    // TP (1): cualquier hora
+    // +13 (2): 6–22
+    // +18 (3): 22–23 o 0–5
+    bool horarioPermitido;
+    if (clasif == 1) // Todo público
+    {
+        horarioPermitido = true;
+    }
+    else if (clasif == 2) // +13
+    {
+        horarioPermitido = (hora >= 6 && hora <= 22);            // AND
+    }
+    else // +18
+    {
+        horarioPermitido = (hora >= 22 && hora <= 23) || (hora >= 0 && hora <= 5); // OR
+    }
+    if (!horarioPermitido) // NOT
+    {
+        razon = "Horario no permitido para la clasificación.";
+        return false;
+    }
+    // 2) Duración por tipo
+    // Película: 60–180 | Serie: 20–90 | Documental: 30–120 | En vivo: 30–240
+    int min = 0, max = 0;
+    if (tipo == 1) { min = 60; max = 180; }
+    else if (tipo == 2) { min = 20; max = 90; }
+    else if (tipo == 3) { min = 30; max = 120; }
+    else                { min = 30; max = 240; }
+
+    if (duracion < min || duracion > max) // OR
+    {
+        razon = $"Duración fuera de rango para este tipo ({min}-{max} min).";
+        return false;
+    }
+
+    // 3) Producción
+    // Baja (1) solo válida para TP o +13. No permitida para +18.
+    bool prodBaja = (produccion == 1);
+    bool es18 = (clasif == 3);
+    if (prodBaja && es18) // AND
+    {
+        razon = "Producción baja no permitida para +18.";
+        return false;
+    }
+    razon = "OK";
+    return true;
+}
+// ---- Clasificación de impacto ----
+// Alto: producción alta || duración >120 || hora 20–23
+// Medio: producción media || 60–120
+// Bajo: producción baja y <60
+string ClasificarImpacto(int duracion, int hora, int produccion)
+{
+    bool prodAlta = (produccion == 3);
+    bool prodMedia = (produccion == 2);
+    bool franjaAlta = (hora >= 20 && hora <= 23); // noche
+
+    if (prodAlta || duracion > 120 || franjaAlta) //
+        return "Alto";
+
+    if (prodMedia || (duracion >= 60 && duracion <= 120)) // OR con AND en rango
+        return "Medio";
+
+    // Si no fue Alto ni Medio y la producción es baja con <60, queda Bajo
+    return "Bajo";
+}
+
+// "Publicar con ajustes"
+// Cumple técnicamente, pero está al borde de límites
+bool RequiereAjusteMenor(int tipo, int duracion, int clasif, int hora)
+{
+    // Rango del tipo
+    int min = 0, max = 0;
+    if (tipo == 1) { min = 60; max = 180; } // Pelicula
+    else if (tipo == 2) { min = 20; max = 90; } // Serie
+    else if (tipo == 3) { min = 30; max = 120; } // Documental
+    else                { min = 30; max = 240; } // En vivo
+
+    bool cercaDelMin = (duracion >= min && duracion <= min + 5);
+    bool cercaDelMax = (duracion <= max && duracion >= max - 5);
+
+    // Horarios “al límite” según clasificación
+    bool tardePara13   = (clasif == 2) && (hora >= 21 && hora <= 22);
+    bool madrugadaParaTP = (clasif == 1) && (hora >= 0 && hora <= 5);
+
+    return cercaDelMin || cercaDelMax || tardePara13 || madrugadaParaTP;
 }
 int LeerTipoContenido()
 {
@@ -131,8 +272,7 @@ int LeerNivelProduccion()
         Console.Write("Inválido. Escriba 1-3: ");
     return valor;
 }
-// Aquí ya podría detallar las reglas técnicas, de impacto y la desicion final :) seguiré mañana
-void MostrarReglas()
+void MostrarReglas() //Ya falta poco para terminar!!! El código, falta lo demás del proyecto :'(
 {
     Console.WriteLine("\nREGLAS DEL SISTEMA");
 }
