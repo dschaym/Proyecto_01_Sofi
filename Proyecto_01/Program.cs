@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization.Formatters;
-
-int totalEvaluados = 0;
+﻿int totalEvaluados = 0;
 int publicados = 0;
 int rechazados = 0;
 int enRevision = 0;
@@ -66,7 +64,10 @@ int MostrarMenu()
 }
 void EvaluarContenido()
 {
+    Console.Clear();
+    for (int i = 0; i < 23; i++) Console.Write("=");
     Console.WriteLine("\nEVALUACIÓN DE CONTENIDO");
+    for (int i = 0; i < 23; i++) Console.Write("=");
     int tipo = LeerTipoContenido();          // 1 Película, 2 Serie, 3 Documental, 4 En vivo
     int duracion = LeerDuracion();           // > 0
     int clasif = LeerClasificacion();        // 1 Todo público, 2 +13, 3 +18
@@ -79,28 +80,37 @@ void EvaluarContenido()
 
     string decision;
     string detalleDecision;
-
+    //Si falla cualquier regla obligatoria, rechazar y no segir a impacto
     if (!okTecnico)
     {
         decision = "Rechazar";
         detalleDecision = "Incumple regla obligatoria: " + razonTecnica;
         rechazados++;
+        totalEvaluados++;
+
+        for (int i = 0; i < 100; i++) Console.Write("=");
+        Console.WriteLine();
+        Console.WriteLine($"DECISIÓN: {decision}");
+        Console.WriteLine($"DETALLE : {detalleDecision}");
+        for (int i = 0; i < 100  ; i++) Console.Write("=");
+
+        return;
     }
-    else
-    {
-        // b) Clasificación de impacto (Bajo/Medio/Alto)
-        string impacto = ClasificarImpacto(duracion, hora, produccion);
+    // b) Clasificación de impacto (Bajo/Medio/Alto)
+    string impacto = ClasificarImpacto(duracion, hora, produccion);
 
-        // Contabilizamos impacto para "predominante"
-        if (impacto == "Bajo") impactoBajo++;
-        else if (impacto == "Medio") impactoMedio++;
-        else impactoAlto++;
+    // Se contabiliza el impacto para "predominante"
+    if (impacto == "Bajo") impactoBajo++;
+    else if (impacto == "Medio") impactoMedio++;
+    else impactoAlto++;
 
-        // c) Decisión final
+    // c) Decisión final
+    string decisionFinal;
+    string detalleFinal;
         if (impacto == "Alto")
         {
-            decision = "Enviar a revisión";
-            detalleDecision = "Impacto Alto (producción alta, o duración >120, o franja 20–23).";
+            decisionFinal = "Enviar a revisión";
+            detalleFinal = "Impacto Alto: producción alta, o duración mayor de 120 minutos o programado entre 20 y 23 horas.";
             enRevision++;
         }
         else
@@ -108,24 +118,23 @@ void EvaluarContenido()
             bool requiereAjuste = RequiereAjusteMenor(tipo, duracion, clasif, hora); // no viola reglas técnicas
             if (requiereAjuste)
             {
-                decision = "Publicar con ajustes";
-                detalleDecision = "Cumple reglas; sugerimos ajuste menor (p. ej., mover horario o afinar minutos cerca del límite).";
+                decisionFinal = "Publicar con ajustes";
+                detalleFinal = "Cumple reglas; pero requiere modificación menor (puede ajustar horario permitido o duración dentro del rango).";
                 publicados++;
             }
             else
             {
-                decision = "Publicar";
-                detalleDecision = "Cumple reglas técnicas e impacto " + impacto + ".";
+                decisionFinal = "Publicar";
+                detalleFinal = "Cumple reglas técnicas e impacto " + impacto + ".";
                 publicados++;
             }
         }
-    }
-
     totalEvaluados++;
-
-    // Mostrar resultado
-    Console.WriteLine($"DECISIÓN: {decision}");
-    Console.WriteLine($"DETALLE : {detalleDecision}");
+    for (int i = 0; i < 100; i++) Console.Write("=");
+    Console.WriteLine();
+    Console.WriteLine($"DECISIÓN: {decisionFinal}");
+    Console.WriteLine($"DETALLE : {detalleFinal}");
+    for (int i = 0; i < 100; i++) Console.Write("=");
 }
 // ---- Reglas técnicas (usa AND/OR/NOT e if anidado/encadenado) ----
 bool ValidacionTecnica(int tipo, int duracion, int clasif, int hora, int produccion, out string razon)
@@ -257,7 +266,7 @@ int LeerHoraProgramada()
     Console.Write("\nHora programada (0-23): ");
     int valor;
     while (!int.TryParse(Console.ReadLine(), out valor) || valor < 0 || valor > 23)
-        Console.Write("Inválido. Ingrese 0-23: ");
+        Console.Write("Entrada inválida. La hora debe de estar entre 0 y 23. Por favor, intente de nuevo. ");
     return valor;
 }
 int LeerNivelProduccion()
@@ -330,7 +339,7 @@ void MostrarEstadisticas()
         porcentajeAprobacion = (publicados * 100.0) / totalEvaluados;
 
     Console.WriteLine($"Porcentaje de aprobación: {porcentajeAprobacion:0.0}%");
-    for (int i = 0; i < 30; i++) Console.Write("=");
+    for (int i = 0; i < 50; i++) Console.Write("=");
 }
 void ReiniciarEstadisticas()
 {
@@ -341,7 +350,7 @@ void ReiniciarEstadisticas()
     impactoBajo = 0;
     impactoMedio = 0;
     impactoAlto = 0;
-    Console.WriteLine("\nESTRATEGÍAS REINICIADAS...");
+    Console.WriteLine("\nESTADÍSTICAS REINICIADAS...");
 }
 void Pausa()
 {
