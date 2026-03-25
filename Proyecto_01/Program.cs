@@ -67,7 +67,7 @@ void EvaluarContenido()
     Console.Clear();
     for (int i = 0; i < 23; i++) Console.Write("=");
     Console.WriteLine();
-    Console.WriteLine("\nEVALUACIÓN DE CONTENIDO");
+    Console.WriteLine("EVALUACIÓN DE CONTENIDO");
     for (int i = 0; i < 23; i++) Console.Write("=");
     Console.WriteLine();
     int tipo = LeerTipoContenido();          // 1 Película, 2 Serie, 3 Documental, 4 En vivo
@@ -95,6 +95,7 @@ void EvaluarContenido()
         Console.WriteLine($"DECISIÓN: {decision}");
         Console.WriteLine($"DETALLE : {detalleDecision}");
         for (int i = 0; i < 100  ; i++) Console.Write("=");
+        Console.WriteLine();
 
         return;
     }
@@ -137,6 +138,7 @@ void EvaluarContenido()
     Console.WriteLine($"DECISIÓN: {decisionFinal}");
     Console.WriteLine($"DETALLE : {detalleFinal}");
     for (int i = 0; i < 120; i++) Console.Write("=");
+    Console.WriteLine();
 }
 // ---- Reglas técnicas (usa AND/OR/NOT e if anidado/encadenado) ----
 bool ValidacionTecnica(int tipo, int duracion, int clasif, int hora, int produccion, out string razon)
@@ -312,6 +314,7 @@ void MostrarReglas()
     Console.WriteLine("  - Rechazar: si falla una regla técnica");
     Console.WriteLine();
     for (int i = 0; i < 100; i++) Console.Write("=");
+    Console.WriteLine();
 }
 void MostrarEstadisticas()
 {
@@ -340,6 +343,7 @@ void MostrarEstadisticas()
 
     Console.WriteLine($"Porcentaje de aprobación: {porcentajeAprobacion:0.0}%");
     for (int i = 0; i < 33; i++) Console.Write("=");
+    Console.WriteLine();
 }
 void ReiniciarEstadisticas()
 {
