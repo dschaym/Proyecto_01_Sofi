@@ -50,7 +50,7 @@ do
 int MostrarMenu()
 {
     Console.WriteLine("SIMULADOR DE DECISIONES PLATAFORMA DE STREAMING");
-    Console.WriteLine("1. Evaluar nuevo contenido");
+    Console.WriteLine("\n1. Evaluar nuevo contenido");
     Console.WriteLine("2. Mostrar reglas del sistema");
     Console.WriteLine("3. Mostrar estadísticas de la sesión");
     Console.WriteLine("4. Reiniciar estadísticas");
@@ -66,8 +66,10 @@ void EvaluarContenido()
 {
     Console.Clear();
     for (int i = 0; i < 23; i++) Console.Write("=");
+    Console.WriteLine();
     Console.WriteLine("\nEVALUACIÓN DE CONTENIDO");
     for (int i = 0; i < 23; i++) Console.Write("=");
+    Console.WriteLine();
     int tipo = LeerTipoContenido();          // 1 Película, 2 Serie, 3 Documental, 4 En vivo
     int duracion = LeerDuracion();           // > 0
     int clasif = LeerClasificacion();        // 1 Todo público, 2 +13, 3 +18
@@ -130,11 +132,11 @@ void EvaluarContenido()
             }
         }
     totalEvaluados++;
-    for (int i = 0; i < 100; i++) Console.Write("=");
+    for (int i = 0; i < 120; i++) Console.Write("=");
     Console.WriteLine();
     Console.WriteLine($"DECISIÓN: {decisionFinal}");
     Console.WriteLine($"DETALLE : {detalleFinal}");
-    for (int i = 0; i < 100; i++) Console.Write("=");
+    for (int i = 0; i < 120; i++) Console.Write("=");
 }
 // ---- Reglas técnicas (usa AND/OR/NOT e if anidado/encadenado) ----
 bool ValidacionTecnica(int tipo, int duracion, int clasif, int hora, int produccion, out string razon)
@@ -193,35 +195,33 @@ bool ValidacionTecnica(int tipo, int duracion, int clasif, int hora, int producc
 // Bajo: producción baja y <60
 string ClasificarImpacto(int duracion, int hora, int produccion)
 {
-    bool prodAlta = (produccion == 3);
-    bool prodMedia = (produccion == 2);
-    bool franjaAlta = (hora >= 20 && hora <= 23); // noche
+    bool prodAlta = (produccion == 3);      // Alto
+    bool prodMedia = (produccion == 2);     // Medio
+    bool franjaAlta = (hora >= 20 && hora <= 23); // Noche
 
-    if (prodAlta || duracion > 120 || franjaAlta) //
+    if (prodAlta || duracion > 120 || franjaAlta)
         return "Alto";
 
-    if (prodMedia || (duracion >= 60 && duracion <= 120)) // OR con AND en rango
+    if (prodMedia || (duracion >= 60 && duracion <= 120))
         return "Medio";
 
-    // Si no fue Alto ni Medio y la producción es baja con <60, queda Bajo
     return "Bajo";
 }
 // "Publicar con ajustes"
 // Cumple técnicamente, pero está al borde de límites
 bool RequiereAjusteMenor(int tipo, int duracion, int clasif, int hora)
 {
-    // Rango del tipo
     int min = 0, max = 0;
-    if (tipo == 1) { min = 60; max = 180; } // Pelicula
-    else if (tipo == 2) { min = 20; max = 90; } // Serie
-    else if (tipo == 3) { min = 30; max = 120; } // Documental
-    else                { min = 30; max = 240; } // En vivo
+
+    if (tipo == 1) { min = 60; max = 180; }
+    else if (tipo == 2) { min = 20; max = 90; }
+    else if (tipo == 3) { min = 30; max = 120; }
+    else { min = 30; max = 240; }
 
     bool cercaDelMin = (duracion >= min && duracion <= min + 5);
     bool cercaDelMax = (duracion <= max && duracion >= max - 5);
 
-    // Horarios “al límite” según clasificación
-    bool tardePara13   = (clasif == 2) && (hora >= 21 && hora <= 22);
+    bool tardePara13 = (clasif == 2) && (hora >= 21 && hora <= 22);
     bool madrugadaParaTP = (clasif == 1) && (hora >= 0 && hora <= 5);
 
     return cercaDelMin || cercaDelMax || tardePara13 || madrugadaParaTP;
@@ -339,7 +339,7 @@ void MostrarEstadisticas()
         porcentajeAprobacion = (publicados * 100.0) / totalEvaluados;
 
     Console.WriteLine($"Porcentaje de aprobación: {porcentajeAprobacion:0.0}%");
-    for (int i = 0; i < 50; i++) Console.Write("=");
+    for (int i = 0; i < 33; i++) Console.Write("=");
 }
 void ReiniciarEstadisticas()
 {
